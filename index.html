@@ -1,0 +1,378 @@
+<html><head><base href="https://codeupbrand.cc">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bulk SMS Sender - Twilio API Integration with Number Import and Logs</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #005450;
+    color: #FFC776;
+    margin: 0;
+    padding: 20px;
+  }
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: rgba(0, 106, 99, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  }
+  h1, h2 {
+    text-align: center;
+    color: #FFC776;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+  label {
+    margin-top: 10px;
+  }
+  input, textarea, select {
+    padding: 10px;
+    margin-top: 5px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007c74;
+    color: #FFC776;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(255,199,118,0.5);
+  }
+  button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #FFC776;
+    color: #005450;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover {
+    background-color: #ffdb9e;
+  }
+  #result, #importResult {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #007c74;
+    border-radius: 5px;
+    display: none;
+  }
+  #progress {
+    margin-top: 20px;
+    background-color: #007c74;
+    border-radius: 5px;
+    display: none;
+    overflow: hidden;
+  }
+  #progressBar {
+    width: 0;
+    height: 20px;
+    background-color: #FFC776;
+    border-radius: 5px;
+  }
+  .tab {
+    overflow: hidden;
+    border-bottom: 1px solid #FFC776;
+    margin-bottom: 20px;
+  }
+  .tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+    color: #FFC776;
+  }
+  .tab button:hover {
+    background-color: rgba(0,124,116,0.5);
+  }
+  .tab button.active {
+    background-color: #007c74;
+  }
+  .tabcontent {
+    display: none;
+    padding: 6px 12px;
+    border-top: none;
+  }
+  #logTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  #logTable th, #logTable td {
+    border: 1px solid #FFC776;
+    padding: 8px;
+    text-align: left;
+  }
+  #logTable th {
+    background-color: #007c74;
+  }
+  #logTable tr:hover {
+    background-color: rgba(0,124,116,0.5);
+  }
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #FFC776;
+  }
+  .footer a {
+    color: #FFC776;
+    text-decoration: none;
+  }
+  .footer a:hover {
+    text-decoration: underline;
+    color: #ffdb9e;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Bulk SMS Sender with Twilio API</h1>
+    
+    <div class="tab">
+      <button class="tablinks" onclick="openTab(event, 'SendSMS')" id="defaultOpen">Send SMS</button>
+      <button class="tablinks" onclick="openTab(event, 'ImportNumbers')">Import Numbers</button>
+      <button class="tablinks" onclick="openTab(event, 'SendingLogs')">Sending Logs</button>
+    </div>
+
+    <div id="SendSMS" class="tabcontent">
+      <form id="smsForm">
+        <label for="accountSid">Twilio Account SID:</label>
+        <input type="text" id="accountSid" name="accountSid" required>
+        
+        <label for="authToken">Twilio Auth Token:</label>
+        <input type="password" id="authToken" name="authToken" required>
+        
+        <label for="from">Twilio Phone Number:</label>
+        <input type="text" id="from" name="from" required>
+        
+        <label for="to">Recipient Phone Numbers (one per line):</label>
+        <textarea id="to" name="to" rows="5" required></textarea>
+        
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="4" required></textarea>
+        
+        <button type="submit">Send Bulk SMS</button>
+      </form>
+      <div id="progress">
+        <div id="progressBar"></div>
+      </div>
+      <div id="result"></div>
+    </div>
+
+    <div id="ImportNumbers" class="tabcontent">
+      <h2>Import Phone Numbers</h2>
+      <form id="importForm">
+        <label for="importFile">Upload CSV or TXT File:</label>
+        <input type="file" id="importFile" name="importFile" accept=".csv,.txt">
+        
+        <button type="submit">Import Numbers</button>
+      </form>
+      <div id="importResult"></div>
+    </div>
+
+    <div id="SendingLogs" class="tabcontent">
+      <h2>Sending Logs</h2>
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>Date/Time</th>
+            <th>Recipient</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody">
+          <!-- Log entries will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      Created by <a href="https://www.codeupbrand.cc" target="_blank">CodeUpBrand</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+  <script>
+    // Prevent removal of footer
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'childList') {
+          const footer = document.querySelector('.footer');
+          if (!footer) {
+            location.reload();
+          }
+        }
+      });
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    document.getElementById("defaultOpen").click();
+
+    let sendingLogs = [];
+
+    document.getElementById('smsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const accountSid = document.getElementById('accountSid').value;
+      const authToken = document.getElementById('authToken').value;
+      const from = document.getElementById('from').value;
+      const to = document.getElementById('to').value.split('\n').map(num => num.trim()).filter(num => num !== '');
+      const message = document.getElementById('message').value;
+      const resultDiv = document.getElementById('result');
+      const progressDiv = document.getElementById('progress');
+      const progressBar = document.getElementById('progressBar');
+      
+      resultDiv.innerHTML = 'Sending messages...';
+      resultDiv.style.display = 'block';
+      progressDiv.style.display = 'block';
+      progressBar.style.width = '0%';
+
+      let successCount = 0;
+      let failCount = 0;
+
+      async function sendSMS(toNumber, index) {
+        try {
+          // In a real-world scenario, you would make this API call from a secure backend
+          // This frontend implementation is for demonstration purposes only
+          const response = await axios.post('https://api.twilio.com/2010-04-01/Accounts/' + accountSid + '/Messages.json', 
+            new URLSearchParams({
+              To: toNumber,
+              From: from,
+              Body: message
+            }), 
+            {
+              auth: {
+                username: accountSid,
+                password: authToken
+              }
+            }
+          );
+          successCount++;
+          addLog(toNumber, 'Success');
+          return response;
+        } catch (error) {
+          failCount++;
+          console.error(`Failed to send SMS to ${toNumber}:`, error);
+          addLog(toNumber, 'Failed');
+          throw error;
+        } finally {
+          const progress = ((index + 1) / to.length) * 100;
+          progressBar.style.width = `${progress}%`;
+        }
+      }
+
+      async function sendBulkSMS() {
+        for (let i = 0; i < to.length; i++) {
+          try {
+            await sendSMS(to[i], i);
+          } catch (error) {
+            // Continue with the next number even if one fails
+          }
+        }
+        
+        resultDiv.innerHTML = `Bulk SMS sending completed.<br>
+                               Successfully sent: ${successCount}<br>
+                               Failed: ${failCount}`;
+        resultDiv.style.color = successCount > failCount ? '#00ff00' : '#ff0000';
+        updateLogTable();
+        
+        // Automatically switch to the Sending Logs tab after completion
+        document.querySelector('.tablinks[onclick="openTab(event, \'SendingLogs\')"]').click();
+      }
+
+      sendBulkSMS();
+    });
+
+    document.getElementById('importForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const importFile = document.getElementById('importFile').files[0];
+      const importResultDiv = document.getElementById('importResult');
+      const recipientTextarea = document.getElementById('to');
+      
+      if (!importFile) {
+        importResultDiv.innerHTML = 'Please select a file to import.';
+        importResultDiv.style.display = 'block';
+        return;
+      }
+
+      const fileExtension = importFile.name.split('.').pop().toLowerCase();
+
+      if (fileExtension === 'csv') {
+        Papa.parse(importFile, {
+          complete: function(results) {
+            const numbers = results.data.flat().map(num => num.trim()).filter(num => num !== '');
+            displayImportResult(numbers);
+          }
+        });
+      } else if (fileExtension === 'txt') {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const content = e.target.result;
+          const numbers = content.split(/\r\n|\n/).map(num => num.trim()).filter(num => num !== '');
+          displayImportResult(numbers);
+        };
+        reader.readAsText(importFile);
+      } else {
+        importResultDiv.innerHTML = 'Invalid file format. Please upload a CSV or TXT file.';
+        importResultDiv.style.display = 'block';
+      }
+
+      function displayImportResult(numbers) {
+        recipientTextarea.value = numbers.join('\n');
+        importResultDiv.innerHTML = `Successfully imported ${numbers.length} phone numbers.`;
+        importResultDiv.style.display = 'block';
+      }
+    });
+
+    function addLog(recipient, status) {
+      const now = new Date();
+      sendingLogs.push({
+        datetime: now.toLocaleString(),
+        recipient: recipient,
+        status: status
+      });
+    }
+
+    function updateLogTable() {
+      const logTableBody = document.getElementById('logTableBody');
+      logTableBody.innerHTML = '';
+      sendingLogs.forEach(log => {
+        const row = logTableBody.insertRow();
+        row.insertCell(0).textContent = log.datetime;
+        row.insertCell(1).textContent = log.recipient;
+        const statusCell = row.insertCell(2);
+        statusCell.textContent = log.status;
+        statusCell.style.color = log.status === 'Success' ? '#00ff00' : '#ff0000';
+      });
+    }
+  </script>
+</body>
+</html>
