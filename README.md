@@ -1,7 +1,8 @@
 # advance-bulk-sms-sender
 Bulk SMS Sender is a web app that integrates with Twilio API to send bulk SMS messages. It features contact list import, message customization, and detailed sending logs. Ideal for marketing campaigns, notifications, and large-scale communication, with a user-friendly interface for efficient SMS management.
 
-![Screenshot 2024-08-11 124537](https://github.com/user-attachments/assets/a0b80901-8bdd-4361-ab22-a6ee80178fd4)
+![Screenshot 2024-08-11 124623](https://github.com/user-attachments/assets/c17f087f-2780-4124-b2fc-b30cc16238ba)
+
 
 Overview
 This application is a Bulk SMS Sender that integrates with the Twilio API to send messages to multiple recipients simultaneously. The application includes functionalities for sending SMS, importing phone numbers from files, and viewing sending logs.
@@ -36,7 +37,8 @@ Click Send Bulk SMS.
 The progress bar will show the sending status. Once complete, you’ll see a summary of successfully sent and failed messages.
 Import Phone Numbers:
 
-![Screenshot 2024-08-11 124623](https://github.com/user-attachments/assets/c17f087f-2780-4124-b2fc-b30cc16238ba)
+
+![Screenshot 2024-08-11 124537](https://github.com/user-attachments/assets/a0b80901-8bdd-4361-ab22-a6ee80178fd4)
 
 Go to the Import Numbers tab.
 Upload a .csv or .txt file containing the phone numbers.
